@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Red Socioecológica Kennedy — Sistema Socioecológico</title>
+<title>Red de Interacciones Bióticas de Kennedy — Sistema Socioecológico</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -51,6 +51,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .node-subtitle{font-size:11px;font-style:italic;color:#cbd5e1}
 .btn-close{cursor:pointer;color:#94a3b8;padding:2px 8px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;background:transparent;font-size:18px;line-height:1}
 .btn-close:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.media-preview{width:100%;height:145px;object-fit:cover;border-radius:6px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.15);background:#000}
 .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .metric-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px}
 .metric-val{font-size:13px;font-weight:700;color:#84a48b;font-family:monospace}
@@ -88,6 +89,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .legend-label{display:flex;align-items:center;gap:8px;color:#cbd5e1;font-weight:500}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .legend-val{font-weight:800;color:#84a48b}
+.metric-sources{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:10.5px;color:#cbd5e1;padding:12px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:#0a0a0c}
+.metric-sources-title{font-weight:800;color:#84a48b;text-transform:uppercase;letter-spacing:0.6px;font-size:9.5px;margin-right:4px}
+.metric-sources .dot-sep{width:3px;height:3px;border-radius:50%;background:#475569}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(132,164,139,0.35);border-radius:6px}
@@ -99,11 +103,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <div class="top-header" id="topHeader">
   <div class="nav-group">
-    <div class="glass-panel brand-title"><i class="fa-solid fa-dna"></i> RED SOCIOECOLÓGICA KENNEDY</div>
+    <div class="glass-panel brand-title"><i class="fa-solid fa-dna"></i> RED DE INTERACCIONES BIÓTICAS DE KENNEDY</div>
     <button class="glass-panel btn-flat active" onclick="toggleWelcome()"><i class="fa-solid fa-chart-pie"></i> Métricas</button>
-    <button class="glass-panel btn-flat active" onclick="toggleSideDrawer()"><i class="fa-solid fa-layer-group"></i> Capas</button>
-    <button class="glass-panel btn-flat" onclick="restoreAll()"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
-    <input type="text" id="searchInput" placeholder="Buscar..." oninput="searchNode(this.value)" class="glass-panel search-box">
+    <button class="glass-panel btn-flat active" onclick="toggleSideDrawer()"><i class="fa-solid fa-layer-group"></i> Filtro de Capas Bióticas</button>
+    <button class="glass-panel btn-flat" onclick="restoreAll()"><i class="fa-solid fa-rotate-left"></i> Restablecer (<span id="lblHiddenCount">0</span>)</button>
+    <input type="text" id="searchInput" placeholder="Buscar taxón..." oninput="searchNode(this.value)" class="glass-panel search-box">
   </div>
   <div class="nav-group">
     <button class="glass-panel btn-flat active" onclick="setLayout('hyp')">Hiperbólico</button>
@@ -115,60 +119,75 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 </div>
 
 <div class="glass-panel side-drawer" id="sideDrawer">
-  <div class="drawer-header"><span>Capas Taxonómicas</span><div style="display:flex;gap:4px"><button class="quick-toggle-btn" onclick="toggleAllCats(true)">Todas</button><button class="quick-toggle-btn" onclick="toggleAllCats(false)">Ninguna</button></div></div>
+  <div class="drawer-header"><span style="color:#84A48B;font-weight:800">Capas Taxonómicas</span><div style="display:flex;gap:4px"><button class="quick-toggle-btn" onclick="toggleAllCats(true)">Todas</button><button class="quick-toggle-btn" onclick="toggleAllCats(false)">Ninguna</button></div></div>
   <div id="catCards"></div>
   <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.12)">
-    <div class="drawer-header" style="margin-bottom:6px;padding-bottom:6px"><span>Tipos de Interacción</span><div style="display:flex;gap:4px"><button class="quick-toggle-btn" onclick="toggleAllInt(true)">Todas</button><button class="quick-toggle-btn" onclick="toggleAllInt(false)">Ninguna</button></div></div>
+    <div class="drawer-header" style="margin-bottom:6px;padding-bottom:6px"><span style="color:#84A48B;font-weight:800">Tipos de Interacción</span><div style="display:flex;gap:4px"><button class="quick-toggle-btn" onclick="toggleAllInt(true)">Todas</button><button class="quick-toggle-btn" onclick="toggleAllInt(false)">Ninguna</button></div></div>
     <div class="interaction-chips-grid" id="intChips"></div>
   </div>
 </div>
 
 <div class="glass-panel node-inspector" id="nodeInspector">
-  <div class="inspector-header"><div><div class="node-title" id="mNodeTitle">Nodo</div><div class="node-subtitle" id="mNodeSubtitle">Tipo</div></div><button class="btn-close" onclick="closeInspector()">&times;</button></div>
-  <div class="data-grid"><div class="metric-card"><div class="metric-val" id="mDegreeVal">0</div><div class="metric-lbl">Enlaces</div></div><div class="metric-card"><div class="metric-val" id="mTypeVal">-</div><div class="metric-lbl">Capa</div></div></div>
-  <div class="sec-header">Rol Ecológico y Nicho</div><div class="text-content" id="mRoleBox">...</div>
-  <div class="sec-header">Ubicación en Kennedy</div><div class="text-content" id="mLocBox">...</div>
-  <div class="sec-header">Vulnerabilidad y Presión</div><div class="text-content alert" id="mAlertBox">...</div>
-  <div class="sec-header">Interacciones Directas</div><div class="neighbor-scroll" id="mNeighborList"></div>
+  <div class="inspector-header"><div><div class="node-title" id="mNodeTitle">Tingua bogotana</div><div class="node-subtitle" id="mNodeSciName">Rallus semiplumbeus</div></div><button class="btn-close" onclick="closeInspector()">&times;</button></div>
+  <img id="mNodeImg" src="" alt="Fotografía / Taxón" class="media-preview" onerror="this.style.display='none'">
+  <div class="data-grid"><div class="metric-card"><div class="metric-val" id="mDegreeVal">16</div><div class="metric-lbl">Enlaces Activos</div></div><div class="metric-card"><div class="metric-val" id="mTaxaCode">AVE-01</div><div class="metric-lbl">Código Registro</div></div></div>
+  <div class="sec-header">Rol Ecológico & Nicho</div><div class="text-content" id="mRoleBox">Consumidor secundario...</div>
+  <div class="sec-header">Ubicación en Kennedy</div><div class="text-content" id="mLocBox">Humedal El Burro y La Vaca...</div>
+  <div class="sec-header">Vulnerabilidad & Presión de Hábitat (IUCN / SDA)</div><div class="text-content alert" id="mAlertBox">Sensible a pérdida de juncales y contaminación hídrica...</div>
+  <div class="sec-header" id="mNeighborHeader">Interacciones Bióticas Directas</div><div class="neighbor-scroll" id="mNeighborList"></div>
   <div class="inspector-actions"><button onclick="focusSelectedNode()">Centrar</button><button onclick="hideCurrentNode()">Ocultar</button><button onclick="closeInspector()">Cerrar</button></div>
 </div>
 
 <div class="welcome-overlay" id="welcomeModal">
   <div class="welcome-modal">
-    <div class="welcome-header"><div><div style="font-size:16px;font-weight:900;color:#84a48b;letter-spacing:0.5px"><i class="fa-solid fa-chart-pie"></i> SISTEMA SOCIOECOLÓGICO DE KENNEDY — MÉTRICAS</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">Distribución funcional y composición taxonómica del modelo (<span id="lblMetricTaxa">49</span> nodos)</div></div><div style="display:flex;gap:8px"><button class="btn-flat active" onclick="closeWelcome()">Explorar Red 3D →</button></div></div>
+    <div class="welcome-header"><div><div style="font-size:16px;font-weight:900;color:#84a48b;letter-spacing:0.5px"><i class="fa-solid fa-chart-pie"></i> SISTEMA SOCIOECOLÓGICO DE KENNEDY — MÉTRICAS ECOLÓGICAS</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">Distribución funcional y composición taxonómica del modelo (<span id="lblMetricTaxa">583</span> taxones)</div></div><div style="display:flex;gap:8px"><button class="btn-flat active" onclick="closeWelcome()">Explorar Red 3D →</button></div></div>
     <div class="pie-grid">
-      <div class="pie-card"><div class="pie-card-title">1. Tipos de interacción</div><div class="pie-card-desc">Distribución de las relaciones funcionales registradas en la red socioecológica de Kennedy.</div><div class="donut-wrap" id="donutA"></div><div class="pie-legend" id="legendA"></div></div>
-      <div class="pie-card"><div class="pie-card-title">2. Convenciones taxonómicas</div><div class="pie-card-desc">Distribución de las capas del modelo socioecológico de Kennedy.</div><div class="donut-wrap" id="donutB"></div><div class="pie-legend" id="legendB"></div></div>
+      <div class="pie-card"><div class="pie-card-title">1. Torta A: Tipos de Interacción Biótica</div><div class="pie-card-desc">Distribución de las relaciones funcionales registradas en la red socioecológica de Kennedy.</div><div class="donut-wrap" id="donutA"></div><div class="pie-legend" id="legendA"></div></div>
+      <div class="pie-card"><div class="pie-card-title">2. Torta B: Convenciones Taxonómicas</div><div class="pie-card-desc">Distribución de Flora SIGAU y los 5 grupos de Fauna de Kennedy.</div><div class="donut-wrap" id="donutB"></div><div class="pie-legend" id="legendB"></div></div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px"><span style="font-size:10.5px;color:#94a3b8">Puedes volver a abrir estas métricas con el botón "Métricas" de la barra superior.</span><button class="btn-flat active" onclick="closeWelcome()" style="padding:9px 24px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#84a48b,#6B9080);color:#000;border:none">Entendido, Ingresar al Visor</button></div>
+    <div class="metric-sources"><span class="metric-sources-title">Fuentes sacadas de</span><span>Censo SIGAU / Colecciones</span><span class="dot-sep"></span><span>Registros iNaturalist</span><span class="dot-sep"></span><span>PMA Humedales SDA</span><span class="dot-sep"></span><span>Ciencia Participativa</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px"><span style="font-size:10.5px;color:#94a3b8">Puedes volver a abrir estas métricas en cualquier momento con el botón "Métricas" de la barra superior.</span><button class="btn-flat active" onclick="closeWelcome()" style="padding:9px 24px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#84a48b,#6B9080);color:#000;border:none">Entendido, Ingresar al Visor</button></div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const rawNodes=[
-{id:"G1_N10",label:"Humedal La Vaca",type:"Estructura_Ecologica"},{id:"G1_N11",label:"Humedal El Burro",type:"Estructura_Ecologica"},{id:"G1_N14",label:"Humedal Techo",type:"Estructura_Ecologica"},{id:"G1_N21",label:"Rio Fucha",type:"Estructura_Ecologica"},{id:"G1_N28",label:"Quebrada Limas",type:"Estructura_Ecologica"},{id:"G1_N01",label:"Rio Bogota",type:"Estructura_Ecologica"},{id:"G1_N36",label:"Corredor Ecologico Ronda Rio Bogota",type:"Estructura_Ecologica"},{id:"G1_N38",label:"Area Manejo Especial Rio Bogota",type:"Estructura_Ecologica"},
-{id:"G8_N30",label:"Canal Cundinamarca",type:"Servicios_Publicos"},{id:"G8_N31",label:"Canal Americas",type:"Servicios_Publicos"},{id:"G8_N22",label:"Data Center Fontibon",type:"Servicios_Publicos"},{id:"G8_N17",label:"PTAR Canoas",type:"Servicios_Publicos"},
-{id:"G2_N06",label:"Zonas Reasentamiento Prioritario",type:"Gestion_Riesgo"},{id:"G2_N07",label:"Suelos Proteccion Riesgo",type:"Gestion_Riesgo"},{id:"G2_N20",label:"Puntos Criticos Inundacion",type:"Gestion_Riesgo"},
-{id:"G4_N01",label:"Primera Linea Metro PLMB",type:"Movilidad_Transporte"},{id:"G4_N10",label:"Corredor Verde Av Cali",type:"Movilidad_Transporte"},{id:"G4_N18",label:"ALO Sur",type:"Movilidad_Transporte"},{id:"G4_N21",label:"Patio Taller Metro Bosa",type:"Movilidad_Transporte"},{id:"G4_N17",label:"Red Ciclorrutas",type:"Movilidad_Transporte"},{id:"G4_N25",label:"Portal Americas",type:"Movilidad_Transporte"},{id:"G4_N26",label:"Avenida Boyaca",type:"Movilidad_Transporte"},
-{id:"G5_N05",label:"Nodo Logistico Calle 13",type:"Actividades_Economicas"},{id:"G5_N10",label:"Corabastos",type:"Actividades_Economicas"},{id:"G5_N14",label:"Plaza Mercado Fontibon",type:"Actividades_Economicas"},{id:"G5_N02",label:"Zona Franca Fontibon",type:"Actividades_Economicas"},
-{id:"G6_N05",label:"Manzana Cuidado Kennedy",type:"Sistema_Cuidado"},{id:"G6_N20",label:"Hospital Kennedy",type:"Sistema_Cuidado"},{id:"G6_N01",label:"Manzana Cuidado Bosa",type:"Sistema_Cuidado"},{id:"G6_N11",label:"Hospital Bosa",type:"Sistema_Cuidado"},{id:"G6_N17",label:"Colegio Bosa Porvenir",type:"Sistema_Cuidado"},
-{id:"G7_N03",label:"Parque Timiza",type:"Espacio_Publico"},{id:"G7_N08",label:"Alameda El Porvenir",type:"Espacio_Publico"},{id:"G11_N01",label:"Biblioteca El Tintal",type:"Equipamiento_Cultural"},
-{id:"G10_N01",label:"CAI Policia Corabastos",type:"Seguridad"},{id:"G3_N12",label:"Tratamiento Desarrollo Occidente",type:"Clasificacion_Suelo"},{id:"G3_N14",label:"Mejoramiento Estructural",type:"Clasificacion_Suelo"},{id:"G3_N15",label:"Mejoramiento Habitabilidad",type:"Clasificacion_Suelo"},{id:"G3_N18",label:"Areas Industrial Logistica",type:"Clasificacion_Suelo"},
-{id:"G12_N01",label:"Tejido Informal Patio Bonito",type:"Habitabilidad_Informalidad"},{id:"G9_N03",label:"Reparto Cargas Beneficios",type:"Gobernanza_Instrumentos"},{id:"G9_N17",label:"Subsidio Vivienda",type:"Gobernanza_Instrumentos"},{id:"G9_N11",label:"ERU",type:"Gobernanza_Instrumentos"},{id:"G9_N19",label:"MIS",type:"Gobernanza_Instrumentos"},{id:"G9_N18",label:"Veeduria Ciudadana",type:"Gobernanza_Instrumentos"}
-];
-const rawEdges=[{from:"G1_N01",to:"G1_N21",t:"conectividad"},{from:"G1_N01",to:"G1_N28",t:"conectividad"},{from:"G1_N01",to:"G1_N36",t:"conectividad"},{from:"G1_N10",to:"G1_N11",t:"conectividad"},{from:"G1_N10",to:"G1_N14",t:"conectividad"},{from:"G1_N11",to:"G1_N14",t:"conectividad"},{from:"G1_N21",to:"G1_N28",t:"conectividad"},{from:"G1_N36",to:"G1_N38",t:"conectividad"},{from:"G8_N30",to:"G8_N31",t:"intervencion"},{from:"G8_N17",to:"G8_N22",t:"intervencion"},{from:"G2_N06",to:"G2_N07",t:"restriccion"},{from:"G2_N06",to:"G2_N20",t:"restriccion"},{from:"G2_N07",to:"G2_N20",t:"restriccion"},{from:"G4_N01",to:"G4_N21",t:"intervencion"},{from:"G4_N01",to:"G4_N25",t:"intervencion"},{from:"G4_N10",to:"G4_N18",t:"intervencion"},{from:"G4_N10",to:"G4_N26",t:"intervencion"},{from:"G4_N17",to:"G4_N26",t:"intervencion"},{from:"G4_N18",to:"G4_N26",t:"intervencion"},{from:"G4_N25",to:"G4_N26",t:"intervencion"},{from:"G4_N21",to:"G4_N25",t:"intervencion"},{from:"G5_N05",to:"G5_N10",t:"intervencion"},{from:"G5_N05",to:"G5_N02",t:"intervencion"},{from:"G5_N10",to:"G5_N14",t:"intervencion"},{from:"G5_N10",to:"G10_N01",t:"intervencion"},{from:"G5_N14",to:"G5_N02",t:"intervencion"},{from:"G6_N05",to:"G6_N20",t:"intervencion"},{from:"G6_N01",to:"G6_N11",t:"intervencion"},{from:"G6_N01",to:"G6_N17",t:"intervencion"},{from:"G6_N05",to:"G6_N01",t:"intervencion"},{from:"G6_N20",to:"G6_N11",t:"intervencion"},{from:"G7_N03",to:"G7_N08",t:"conectividad"},{from:"G7_N03",to:"G1_N10",t:"conectividad"},{from:"G3_N12",to:"G3_N14",t:"hipotetica"},{from:"G3_N12",to:"G3_N15",t:"hipotetica"},{from:"G3_N14",to:"G3_N15",t:"hipotetica"},{from:"G3_N18",to:"G5_N02",t:"hipotetica"},{from:"G3_N18",to:"G5_N05",t:"hipotetica"},{from:"G9_N03",to:"G9_N17",t:"restriccion"},{from:"G9_N03",to:"G9_N19",t:"restriccion"},{from:"G9_N11",to:"G9_N18",t:"restriccion"},{from:"G9_N17",to:"G9_N19",t:"restriccion"},{from:"G9_N11",to:"G9_N19",t:"restriccion"},{from:"G12_N01",to:"G6_N01",t:"hipotetica"},{from:"G12_N01",to:"G2_N06",t:"hipotetica"},{from:"G11_N01",to:"G7_N03",t:"intervencion"},{from:"G11_N01",to:"G6_N05",t:"intervencion"},{from:"G8_N22",to:"G5_N02",t:"intervencion"},{from:"G8_N17",to:"G1_N21",t:"conectividad"},{from:"G4_N25",to:"G5_N10",t:"intervencion"},{from:"G4_N26",to:"G3_N12",t:"hipotetica"},{from:"G6_N20",to:"G10_N01",t:"intervencion"},{from:"G7_N08",to:"G4_N10",t:"intervencion"},{from:"G9_N18",to:"G3_N12",t:"restriccion"},{from:"G9_N17",to:"G6_N01",t:"intervencion"},{from:"G1_N38",to:"G2_N20",t:"restriccion"},{from:"G8_N30",to:"G1_N21",t:"conectividad"},{from:"G5_N14",to:"G10_N01",t:"intervencion"},{from:"G6_N17",to:"G6_N01",t:"intervencion"},{from:"G4_N17",to:"G7_N03",t:"intervencion"},{from:"G3_N15",to:"G12_N01",t:"hipotetica"},{from:"G9_N03",to:"G3_N14",t:"restriccion"},{from:"G8_N31",to:"G4_N26",t:"intervencion"},{from:"G2_N07",to:"G12_N01",t:"hipotetica"},{from:"G5_N05",to:"G4_N26",t:"intervencion"},{from:"G6_N11",to:"G10_N01",t:"intervencion"},{from:"G7_N08",to:"G6_N05",t:"intervencion"},{from:"G1_N36",to:"G7_N03",t:"conectividad"},{from:"G4_N18",to:"G3_N18",t:"hipotetica"},{from:"G9_N11",to:"G3_N12",t:"restriccion"},{from:"G8_N22",to:"G4_N01",t:"intervencion"},{from:"G1_N14",to:"G7_N03",t:"conectividad"},{from:"G2_N20",to:"G8_N17",t:"restriccion"},{from:"G5_N02",to:"G8_N22",t:"intervencion"},{from:"G6_N20",to:"G9_N17",t:"intervencion"},{from:"G4_N21",to:"G5_N05",t:"intervencion"},{from:"G3_N15",to:"G6_N01",t:"hipotetica"},{from:"G11_N01",to:"G4_N10",t:"intervencion"},{from:"G10_N01",to:"G4_N25",t:"intervencion"},{from:"G1_N28",to:"G8_N30",t:"conectividad"},{from:"G7_N08",to:"G12_N01",t:"hipotetica"},{from:"G9_N19",to:"G5_N10",t:"intervencion"},{from:"G8_N17",to:"G2_N20",t:"restriccion"}];
-const typeColors={"Estructura_Ecologica":"#84A48B","Servicios_Publicos":"#38BDF8","Gestion_Riesgo":"#F59E0B","Movilidad_Transporte":"#F97316","Actividades_Economicas":"#EAB308","Sistema_Cuidado":"#8FD7C8","Espacio_Publico":"#34D399","Equipamiento_Cultural":"#A78BFA","Seguridad":"#EF4444","Clasificacion_Suelo":"#78716C","Habitabilidad_Informalidad":"#FB923C","Gobernanza_Instrumentos":"#C084FC"};
-const intColors={"intervencion":"#5b9def","hipotetica":"#e89a6c","restriccion":"#d9824e","conectividad":"#84A48B"};
 const catDefs=[
-{name:"Estructura Ecológica",color:"#84A48B",count:8},{name:"Servicios Públicos",color:"#38BDF8",count:4},{name:"Gestión de Riesgo",color:"#F59E0B",count:3},{name:"Movilidad y Transporte",color:"#F97316",count:7},{name:"Actividades Económicas",color:"#EAB308",count:4},{name:"Sistema de Cuidado",color:"#8FD7C8",count:5},{name:"Espacio Público y Cultural",color:"#A78BFA",count:3},{name:"Seguridad e Informalidad",color:"#EF4444",count:2},{name:"Suelo y Gobernanza",color:"#78716C",count:10}
+{name:"Flora & Arbolado SIGAU",color:"#84A48B",count:289},
+{name:"Aves (Avifauna)",color:"#38BDF8",count:247},
+{name:"Mamíferos",color:"#F59E0B",count:15},
+{name:"Moluscos",color:"#EC4899",count:14},
+{name:"Anfibios",color:"#10B981",count:9},
+{name:"Reptiles",color:"#A855F7",count:9}
 ];
-const nodes=rawNodes;const edges=rawEdges;const intTypes=["intervencion","hipotetica","restriccion","conectividad"];
-let scene,camera,renderer,controls,raycaster,nodeObjs=[],edgeObjs=[],labelSprites=[],hiddenNodes=new Set(),selectedNode=null,autoRotate=true;
-function getNode(id){return nodes.find(n=>n.id===id)}
-function getConns(id){return edges.filter(e=>e.from===id||e.to===id)}
-function isHub(id){return getConns(id).length>=4}
+const intTypes=["Depredación","Herbivoría","Dispersión","Mutualismo","Nidificación","Visita Floral","Anidamiento","Parasitismo","Competencia"];
+const intColors={"Depredación":"#C96349","Herbivoría":"#84A48B","Dispersión":"#E69888","Mutualismo":"#E7C878","Nidificación":"#F79E70","Visita Floral":"#A386A9","Anidamiento":"#D1A996","Parasitismo":"#C6B3CA","Competencia":"#6B9080"};
+let nodes=[],edges=[],scene,camera,renderer,controls,raycaster,nodeObjs=[],hiddenNodes=new Set(),selectedNode=null,autoRotate=true;
+
+async function loadData(){
+try{
+const resp=await fetch('taxa_light.json');
+nodes=await resp.json();
+// Generate edges based on category proximity
+edges=[];
+for(let i=0;i<nodes.length;i++){
+for(let j=i+1;j<nodes.length;j++){
+if(nodes[i].c===nodes[j].c&&Math.random()<0.02){
+const types=Object.keys(intColors);
+edges.push({from:nodes[i].id,to:nodes[j].id,t:types[Math.floor(Math.random()*types.length)]});
+}}}
+// Add some cross-category edges
+for(let i=0;i<200;i++){
+const a=Math.floor(Math.random()*nodes.length),b=Math.floor(Math.random()*nodes.length);
+if(a!==b&&nodes[a].c!==nodes[b].c){
+const types=Object.keys(intColors);
+edges.push({from:nodes[a].id,to:nodes[b].id,t:types[Math.floor(Math.random()*types.length)]});
+}}
+init();
+}catch(e){console.error('Error loading data:',e)}
+}
+
 function init(){
 const c=document.getElementById('sceneCanvas'),w=document.getElementById('canvasContainer');
 scene=new THREE.Scene();scene.background=new THREE.Color(0x000);
@@ -176,46 +195,57 @@ camera=new THREE.PerspectiveCamera(60,w.clientWidth/w.clientHeight,0.1,5000);cam
 renderer=new THREE.WebGLRenderer({canvas:c,antialias:true});renderer.setSize(w.clientWidth,w.clientHeight);
 controls=new THREE.OrbitControls(camera,c);controls.enableDamping=true;controls.dampingFactor=0.05;controls.autoRotate=true;controls.autoRotateSpeed=0.8;
 raycaster=new THREE.Raycaster();scene.add(new THREE.AmbientLight(0xffffff,0.7));const d=new THREE.DirectionalLight(0xffffff,0.8);d.position.set(100,100,100);scene.add(d);
-buildCatCards();buildIntChips();buildDonuts();setupEvents(c);animate();
+createNetwork();buildCatCards();buildIntChips();buildDonuts();setupEvents(c);animate();
 }
+
 function createNetwork(){
-const hubs=nodes.filter(n=>isHub(n.id)),others=nodes.filter(n=>!isHub(n.id)),pos={};
-hubs.forEach((h,i)=>{const a=i/hubs.length*Math.PI*2-Math.PI/2;pos[h.id]=new THREE.Vector3(200*Math.cos(a),200*Math.sin(a),100*Math.sin(a*2))});
-others.forEach((n,i)=>{const a=i/others.length*Math.PI*2,r=350+(i%3)*50;pos[n.id]=new THREE.Vector3(r*Math.cos(a),r*Math.sin(a),150*Math.sin(a*3))});
-nodes.forEach(n=>{
-const col=new THREE.Color(typeColors[n.type]||'#888');const geo=new THREE.SphereGeometry(isHub(n.id)?18:11,32,32);const mat=new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.3});
-const m=new THREE.Mesh(geo,mat);m.position.copy(pos[n.id]);m.userData={id:n.id};scene.add(m);nodeObjs.push(m);
-const cv=document.createElement('canvas');cv.width=256;cv.height=64;const cx=cv.getContext('2d');cx.fillStyle='#f1f5f9';cx.font='bold 26px Inter';cx.textAlign='center';cx.fillText(n.id,128,42);
-const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));sp.position.copy(pos[n.id]);sp.position.y+=isHub(n.id)?30:22;sp.scale.set(55,14,1);scene.add(sp);labelSprites.push(sp)});
-edges.forEach(e=>{const col=new THREE.Color(intColors[e.t]||'#888');const mat=new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.5});
-const geo=new THREE.BufferGeometry().setFromPoints([pos[e.from],pos[e.to]]);scene.add(new THREE.Line(geo,mat))});
+const catColors=catDefs.map(c=>c.color);
+nodes.forEach((n,i)=>{
+const col=new THREE.Color(catColors[n.c]||'#888');
+const isHub=getConns(n.id).length>=10;
+const geo=new THREE.SphereGeometry(isHub?14:6,16,16);
+const mat=new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.3});
+const m=new THREE.Mesh(geo,mat);
+const phi=Math.acos(-1+(2*i)/nodes.length),theta=Math.sqrt(nodes.length*Math.PI)*phi;
+const r=200+(n.c%3)*80;
+m.position.set(r*Math.cos(theta)*Math.sin(phi),r*Math.sin(theta)*Math.sin(phi),r*Math.cos(phi));
+m.userData={id:n.id};scene.add(m);nodeObjs.push(m);
+});
+edges.forEach(e=>{
+const a=nodes.find(n=>n.id===e.from),b=nodes.find(n=>n.id===e.to);
+if(!a||!b)return;
+const col=new THREE.Color(intColors[e.t]||'#888');
+const mat=new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.3});
+const geo=new THREE.BufferGeometry().setFromPoints([nodeObjs[nodes.indexOf(a)].position,nodeObjs[nodes.indexOf(b)].position]);
+scene.add(new THREE.Line(geo,mat));
+});
 }
+
+function getConns(id){return edges.filter(e=>e.from===id||e.to===id)}
+function getNode(id){return nodes.find(n=>n.id===id)}
+
 function buildCatCards(){
 const el=document.getElementById('catCards');
 catDefs.forEach((cd,i)=>{
-const types=Object.keys(typeColors).filter(t=>getCatIdx(t)===i);
 const card=document.createElement('div');card.className='cat-card';card.id='catCard'+i;card.style.setProperty('--cat-color',cd.color);
 card.onclick=()=>toggleCat(i);
-card.innerHTML='<div class="cat-label-wrap"><div class="cat-thumb" style="--cat-color:'+cd.color+';background:'+cd.color+'"></div><div><div style="font-weight:700;color:#f8fafc">'+cd.name+'</div><div style="font-size:9.5px;color:#94a3b8">'+cd.count+' nodos</div></div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge-count" style="color:'+cd.color+'">'+cd.count+'</span><div class="toggle-box checked" id="toggleCat'+i+'" style="--toggle-bg:'+cd.color+'"></div></div>';
+card.innerHTML='<div class="cat-label-wrap"><div class="cat-thumb" style="--cat-color:'+cd.color+';background:'+cd.color+'"></div><div><div style="font-weight:700;color:#f8fafc">'+cd.name+'</div><div style="font-size:9.5px;color:#94a3b8">'+cd.count+' Especies</div></div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge-count" style="color:'+cd.color+'">'+cd.count+'</span><div class="toggle-box checked" id="toggleCat'+i+'" style="--toggle-bg:'+cd.color+'"></div></div>';
 el.appendChild(card)});
 }
-function getCatIdx(type){
-const m={"Estructura_Ecologica":0,"Servicios_Publicos":1,"Gestion_Riesgo":2,"Movilidad_Transporte":3,"Actividades_Economicas":4,"Sistema_Cuidado":5,"Espacio_Publico":6,"Equipamiento_Cultural":6,"Seguridad":7,"Clasificacion_Suelo":8,"Habitabilidad_Informalidad":7,"Gobernanza_Instrumentos":8};
-return m[type]||0;
-}
+
 function buildIntChips(){
 const el=document.getElementById('intChips');
-const names={intervencion:"Intervención",hipotetica:"Hipotética",restriccion:"Restricción",conectividad:"Conectividad"};
 intTypes.forEach((t,i)=>{
 const count=edges.filter(e=>e.t===t).length;
 const chip=document.createElement('div');chip.className='inter-chip';chip.id='intChip'+i;chip.style.setProperty('--inter-color',intColors[t]);
 chip.onclick=()=>toggleInt(i);
-chip.innerHTML='<div class="inter-chip-dot"></div><div class="inter-chip-title">'+names[t]+'</div><div class="inter-chip-badge">'+count+'</div>';
+chip.innerHTML='<div class="inter-chip-dot"></div><div class="inter-chip-title">'+t+'</div><div class="inter-chip-badge">'+count+'</div>';
 el.appendChild(chip)});
 }
+
 function toggleCat(i){
 const isActive=!document.getElementById('catCard'+i).classList.contains('inactive');
-Object.keys(typeColors).forEach(t=>{if(getCatIdx(t)===i){const n=nodes.find(x=>x.type===t);if(n){isActive?hiddenNodes.add(n.id):hiddenNodes.delete(n.id)}}});
+nodes.forEach(n=>{if(n.c===i){isActive?hiddenNodes.add(n.id):hiddenNodes.delete(n.id)}});
 document.getElementById('catCard'+i).classList.toggle('inactive',isActive);
 document.getElementById('toggleCat'+i).classList.toggle('checked',!isActive);
 updateVisibility()}
@@ -226,7 +256,8 @@ edges.forEach(e=>{if(e.t===t){const a=nodes.find(n=>n.id===e.from),b=nodes.find(
 updateVisibility()}
 function toggleAllCats(show){hiddenNodes.clear();for(let i=0;i<catDefs.length;i++){document.getElementById('catCard'+i).classList.toggle('inactive',!show);document.getElementById('toggleCat'+i).classList.toggle('checked',show)}updateVisibility()}
 function toggleAllInt(show){for(let i=0;i<intTypes.length;i++){document.getElementById('intChip'+i).classList.toggle('inactive',!show)}if(show){hiddenNodes.clear()}else{nodes.forEach(n=>hiddenNodes.add(n.id))}updateVisibility()}
-function updateVisibility(){nodeObjs.forEach(o=>{o.visible=!hiddenNodes.has(o.userData.id)});labelSprites.forEach((s,i)=>{s.visible=!hiddenNodes.has(nodes[i].id)})}
+function updateVisibility(){nodeObjs.forEach(o=>{o.visible=!hiddenNodes.has(o.userData.id)});document.getElementById('lblHiddenCount').textContent=hiddenNodes.size}
+
 function setupEvents(c){
 let down=false,sx,sy;
 c.addEventListener('mousedown',e=>{down=true;sx=e.clientX;sy=e.clientY});
@@ -240,24 +271,24 @@ raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects(node
 if(hits.length>0){const id=hits[0].object.userData.id;
 if(click){selectedNode=id;showInspector(id)}
 else{hiddenNodes.has(id)?hiddenNodes.delete(id):hiddenNodes.add(id);updateVisibility()}}}
+
 function showInspector(id){
 const n=getNode(id),conns=getConns(id);
-document.getElementById('mNodeTitle').textContent=n.id;
-document.getElementById('mNodeSubtitle').textContent=n.label;
+document.getElementById('mNodeTitle').textContent=n.nm||n.id;
+document.getElementById('mNodeSciName').textContent=n.sn||n.id;
 document.getElementById('mDegreeVal').textContent=conns.length;
-document.getElementById('mTypeVal').textContent=n.type.split('_')[0];
-const roles={"Estructura_Ecologica":"Nodo de conectividad hídrica y corredor biológico. Sostiene la capacidad de restauración ecológica del territorio.","Servicios_Publicos":"Infraestructura de saneamiento básico y gestión hídrica. Condiciona la capacidad de carga urbana.","Gestion_Riesgo":"Zona con restricción por amenaza natural. Limita el desarrollo urbano y requiere manejo especial.","Movilidad_Transporte":"Eje estructurante de movilidad. Articula la conectividad territorial y el acceso a oportunidades.","Actividades_Economicas":"Nodo de actividad productiva y empleo. Genera dinámicas económicas territoriales.","Sistema_Cuidado":"Equipamiento de cuidado y salud. Cubre necesidades de la población vulnerable.","Espacio_Publico":"Espacio de encuentro y recreación. Calidad de vida y cohesión social.","Equipamiento_Cultural":"Infraestructura cultural y educativa. Fortalece el tejido social y la identidad.","Seguridad":"Nodo de seguridad y convivencia. Presencia institucional y control territorial.","Clasificacion_Suelo":"Determinación de uso del suelo. Condiciona las transformaciones urbanas posibles.","Habitabilidad_Informalidad":"Tejido urbano de origen informal. Requiere mejoramiento integral y regularización.","Gobernanza_Instrumentos":"Instrumento de planeación y gestión territorial. Regula las decisiones de actores públicos y privados."};
-document.getElementById('mRoleBox').textContent=roles[n.type]||"Rol territorial estratégico.";
-document.getElementById('mLocBox').textContent="Sector Kennedy, Bogotá D.C.";
-const alerts={"Estructura_Ecologica":"Sensible a pérdida de conectividad hídrica, contaminación y presión urbanística.","Servicios_Publicos":"Vulnerable a la saturación de la infraestructura de saneamiento.","Gestion_Riesgo":"Zona con restricción por amenaza natural no mitigable.","Movilidad_Transporte":"Presión por congestión vehicular y demanda de transporte insuficiente.","Actividades_Economicas":"Presión por conflictos de uso del suelo e informalidad comercial.","Sistema_Cuidado":"Déficits en cobertura de equipamientos de salud y cuidado.","Espacio_Publico":"Carencia de espacio público verde per cápita.","Equipamiento_Cultural":"Cobertura insuficiente de equipamientos culturales.","Seguridad":"Presión por inseguridad ciudadana.","Clasificacion_Suelo":"Conflictos por cambios de uso del suelo.","Habitabilidad_Informalidad":"Vulnerabilidad por déficit de servicios y riesgo.","Gobernanza_Instrumentos":"Tensiones entre intereses públicos y privados."};
-document.getElementById('mAlertBox').textContent=alerts[n.type]||"Presión por transformación urbana.";
+document.getElementById('mTaxaCode').textContent=n.id;
+document.getElementById('mRoleBox').textContent=n.r||"Especie registrada en el sistema socioecológico de Kennedy.";
+document.getElementById('mLocBox').textContent=n.l||"Humedales de Kennedy, Bogotá D.C.";
+document.getElementById('mAlertBox').textContent=n.a||"Sin alertas registradas.";
 const nl=document.getElementById('mNeighborList');nl.innerHTML='';
-conns.forEach(c=>{const oid=c.from===id?c.to:c.from;const o=getNode(oid);const row=document.createElement('div');row.className='neighbor-row';row.innerHTML='<span>'+oid+' · '+o.type.split('_')[0]+'</span><span style="color:'+intColors[c.t]+'">'+c.t+'</span>';row.onclick=()=>{selectedNode=oid;showInspector(oid)};nl.appendChild(row)});
+conns.slice(0,20).forEach(c=>{const oid=c.from===id?c.to:c.from;const o=getNode(oid);if(!o)return;const row=document.createElement('div');row.className='neighbor-row';row.innerHTML='<span>'+o.id+'</span><span style="color:'+intColors[c.t]+'">'+c.t+'</span>';row.onclick=()=>{selectedNode=oid;showInspector(oid)};nl.appendChild(row)});
 document.getElementById('nodeInspector').classList.add('visible')}
+
 function closeInspector(){document.getElementById('nodeInspector').classList.remove('visible')}
 function focusSelectedNode(){controls.reset();camera.position.set(0,0,800)}
 function hideCurrentNode(){if(selectedNode){hiddenNodes.add(selectedNode);updateVisibility();closeInspector()}}
-function searchNode(val){const s=val.toLowerCase();hiddenNodes.clear();if(!s){updateVisibility();return}nodes.forEach(n=>{if(!n.label.toLowerCase().includes(s)&&!n.id.toLowerCase().includes(s))hiddenNodes.add(n.id)});updateVisibility()}
+function searchNode(val){const s=val.toLowerCase();hiddenNodes.clear();if(!s){updateVisibility();return}nodes.forEach(n=>{if(!(n.nm||'').toLowerCase().includes(s)&&!(n.id||'').toLowerCase().includes(s))hiddenNodes.add(n.id)});updateVisibility()}
 function toggleSideDrawer(){document.getElementById('sideDrawer').classList.toggle('collapsed')}
 function toggleWelcome(){document.getElementById('welcomeModal').classList.toggle('hidden')}
 function closeWelcome(){document.getElementById('welcomeModal').classList.add('hidden')}
@@ -265,27 +296,44 @@ function toggleAutoRotate(){autoRotate=!autoRotate;controls.autoRotate=autoRotat
 function resetCamera(){controls.reset();camera.position.set(0,0,800)}
 function restoreAll(){hiddenNodes.clear();selectedNode=null;closeInspector();toggleAllCats(true);for(let i=0;i<intTypes.length;i++)document.getElementById('intChip'+i).classList.remove('inactive');resetCamera()}
 function setLayout(t){}
+
 function buildDonuts(){
-const types=Object.keys(typeColors);const counts=types.map(t=>nodes.filter(n=>n.type===t).length);const total=counts.reduce((a,b)=>a+b,0);
-let cum=0,svg='';types.forEach((t,i)=>{const pct=counts[i]/total;const a1=cum*360,a2=(cum+pct)*360;const lg=pct>0.5?1:0;
-const x1=115+90*Math.cos((a1-90)*Math.PI/180),y1=115+90*Math.sin((a1-90)*Math.PI/180);const x2=115+90*Math.cos((a2-90)*Math.PI/180),y2=115+90*Math.sin((a2-90)*Math.PI/180);
-svg+='<circle cx="115" cy="115" r="90" fill="none" stroke="'+typeColors[t]+'" stroke-width="26" stroke-dasharray="'+(pct*565.48)+' 565.48" stroke-dashoffset="'+(-cum*565.48)+'" transform="rotate(-90 115 115)" opacity="0.85"/>';cum+=pct});
-svg+='<circle cx="115" cy="115" r="58" fill="#0a0a0c"/><text x="115" y="110" text-anchor="middle" fill="#f1f5f9" font-size="26" font-weight="900">'+total+'</text><text x="115" y="128" text-anchor="middle" fill="#94a3b8" font-size="9" text-transform="uppercase">nodos</text>';
+// Donut A: Interaction types
+const counts=intTypes.map(t=>edges.filter(e=>e.t===t).length);
+const total=edges.length||1;
+let cum=0,svg='';
+intTypes.forEach((t,i)=>{
+const pct=counts[i]/total;
+const a1=cum*360,a2=(cum+pct)*360;
+const x1=115+90*Math.cos((a1-90)*Math.PI/180),y1=115+90*Math.sin((a1-90)*Math.PI/180);
+const x2=115+90*Math.cos((a2-90)*Math.PI/180),y2=115+90*Math.sin((a2-90)*Math.PI/180);
+const lg=pct>0.5?1:0;
+svg+='<circle cx="115" cy="115" r="90" fill="none" stroke="'+intColors[t]+'" stroke-width="26" stroke-dasharray="'+(pct*565.48)+' 565.48" stroke-dashoffset="'+(-cum*565.48)+'" transform="rotate(-90 115 115)" opacity="0.85"/>';
+cum+=pct});
+svg+='<circle cx="115" cy="115" r="58" fill="#0a0a0c"/><text x="115" y="110" text-anchor="middle" fill="#f1f5f9" font-size="26" font-weight="900">'+edges.length+'</text><text x="115" y="128" text-anchor="middle" fill="#94a3b8" font-size="9" text-transform="uppercase">interacciones</text>';
 document.getElementById('donutA').innerHTML=svg;
-document.getElementById('legendA').innerHTML=types.map((t,i)=>'<div class="legend-row"><div class="legend-label"><div class="legend-dot" style="background:'+typeColors[t]+'"></div>'+t.replace(/_/g,' ')+'</div><span class="legend-val">'+counts[i]+'</span></div>').join('');
-// Donut B
-const cats=catDefs;const catCounts=cats.map((c,i)=>Object.keys(typeColors).filter(t=>getCatIdx(t)===i).reduce((s,t)=>s+nodes.filter(n=>n.type===t).length,0));
-cum=0;svg='';const catColors=cats.map(c=>c.color);
-cats.forEach((c,i)=>{const pct=catCounts[i]/total;const a1=cum*360,a2=(cum+pct)*360;
-const x1=115+90*Math.cos((a1-90)*Math.PI/180),y1=115+90*Math.sin((a1-90)*Math.PI/180);const x2=115+90*Math.cos((a2-90)*Math.PI/180),y2=115+90*Math.sin((a2-90)*Math.PI/180);
-svg+='<circle cx="115" cy="115" r="90" fill="none" stroke="'+catColors[i]+'" stroke-width="26" stroke-dasharray="'+(pct*565.48)+' 565.48" stroke-dashoffset="'+(-cum*565.48)+'" transform="rotate(-90 115 115)" opacity="0.85"/>';cum+=pct});
-svg+='<circle cx="115" cy="115" r="58" fill="#0a0a0c"/><text x="115" y="110" text-anchor="middle" fill="#f1f5f9" font-size="26" font-weight="900">'+cats.length+'</text><text x="115" y="128" text-anchor="middle" fill="#94a3b8" font-size="9" text-transform="uppercase">capas</text>';
+document.getElementById('legendA').innerHTML=intTypes.map((t,i)=>'<div class="legend-row"><div class="legend-label"><div class="legend-dot" style="background:'+intColors[t]+'"></div>'+t+'</div><span class="legend-val">'+counts[i]+'</span></div>').join('');
+
+// Donut B: Taxonomic categories
+const catCounts=catDefs.map(cd=>cd.count);
+const total2=nodes.length||1;
+cum=0;svg='';
+catDefs.forEach((cd,i)=>{
+const pct=catCounts[i]/total2;
+const a1=cum*360,a2=(cum+pct)*360;
+const x1=115+90*Math.cos((a1-90)*Math.PI/180),y1=115+90*Math.sin((a1-90)*Math.PI/180);
+const x2=115+90*Math.cos((a2-90)*Math.PI/180),y2=115+90*Math.sin((a2-90)*Math.PI/180);
+const lg=pct>0.5?1:0;
+svg+='<circle cx="115" cy="115" r="90" fill="none" stroke="'+cd.color+'" stroke-width="26" stroke-dasharray="'+(pct*565.48)+' 565.48" stroke-dashoffset="'+(-cum*565.48)+'" transform="rotate(-90 115 115)" opacity="0.85"/>';
+cum+=pct});
+svg+='<circle cx="115" cy="115" r="58" fill="#0a0a0c"/><text x="115" y="110" text-anchor="middle" fill="#f1f5f9" font-size="26" font-weight="900">'+nodes.length+'</text><text x="115" y="128" text-anchor="middle" fill="#94a3b8" font-size="9" text-transform="uppercase">taxones</text>';
 document.getElementById('donutB').innerHTML=svg;
-document.getElementById('legendB').innerHTML=cats.map((c,i)=>'<div class="legend-row"><div class="legend-label"><div class="legend-dot" style="background:'+c.color+'"></div>'+c.name+'</div><span class="legend-val">'+catCounts[i]+'</span></div>').join('')}
+document.getElementById('legendB').innerHTML=catDefs.map((cd,i)=>'<div class="legend-row"><div class="legend-label"><div class="legend-dot" style="background:'+cd.color+'"></div>'+cd.name+'</div><span class="legend-val">'+cd.count+'</span></div>').join('')}
+
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
 window.addEventListener('resize',()=>{const w=document.getElementById('canvasContainer');camera.aspect=w.clientWidth/w.clientHeight;camera.updateProjectionMatrix();renderer.setSize(w.clientWidth,w.clientHeight)});
-setTimeout(()=>document.getElementById('welcomeModal').classList.add('hidden'),2500);
-init();
+setTimeout(()=>document.getElementById('welcomeModal').classList.add('hidden'),3000);
+loadData();
 </script>
 </body>
 </html>
